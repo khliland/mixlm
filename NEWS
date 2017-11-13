@@ -1,0 +1,16 @@
+Version in 1.1.0
+================
+Date: 2015.11.13
+
+Changes:
+-------
+- Sets contrasts to contr.sum (sum-to-zero) on startup with a message.
+- Changed simple.glht to handle Tukey's HSD for fixed effect models the same way as for mixed models.
+- Changed the cld to allways have the first letter in the beginning of the column regardless of decreasing = TRUE/FALSE.
+- Added studentized range for 1 df in quantile function for improved simple.glht output.
+- Graceful error when 1 df encountered for cld.
+- Moved packages from depends to imports.
+
+Bug fixes:
+----------
+- Corrected Anova which always defaulted to type="II", claiming to type="III".

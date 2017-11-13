@@ -1,0 +1,89 @@
+import(car)
+importFrom(pls,RMSEP)
+import(multcomp)
+importFrom(pracma,rref)
+importFrom(leaps, regsubsets)
+importFrom("graphics", "axis", "box", "mtext", "par", "plot", "points")
+importFrom("stats", ".getXlevels", "add1", "anova", "aov",
+           "as.formula", "coef", "complete.cases", "cov", "drop.scope",
+           "drop1", "formula", "gaussian", "hatvalues",
+           "is.empty.model", "lm.fit", "lm.influence", "lm.wfit",
+           "model.extract", "model.frame", "model.matrix",
+           "model.offset", "model.response", "model.weights",
+           "naprint", "pchisq", "pf", "pnorm", "printCoefmat", "pt",
+           "ptukey", "qnorm", "qt", "qtukey", "quantile", "residuals",
+           "symnum", "terms", "update", "var", "vcov")
+export(
+    Anova,
+    anova_reg,
+    AnovaMix,
+    backward,
+    best.subsets,
+    cld,
+    confusion,
+#    ConjComp,
+	  CIgrandMean,
+    effect.labels,
+    forward,
+    fparse,
+    glm,
+    is.balanced,
+    lm,
+    lmer,
+    plotprops,
+    PRESS,
+    PRESS.pred,
+    PRESS.res,
+    print.AnovaMix,
+  	print.CIgm,
+    print.simple.glht,
+    print.summary.lmm,
+    print.WF,
+    prop.test.ordinary,
+    qr.lmm,
+    R2pred,
+    random.worker,
+#    relatives,
+#    response,
+#    response.default,
+#    responseName,
+#    responseName.default,
+    RMSEP,
+    rmsep,
+    rparse,
+    simple.glht,
+    spearson,
+    stepWise,
+    stepWiseBack,
+    summary.lmm,
+    t_test,
+    t_test.default,
+    t_test.formula,
+    t_test_sum,
+    tally,
+#    term.names,
+#    term.names.default,
+    wideForward,
+    z_test,
+    z_test.default,
+    z_test.formula,
+    z_test_sum
+)
+
+S3method(Anova, lmm)
+S3method(summary, lmm)
+S3method(print, summary.lmm)
+S3method(qr, lmm)
+S3method(cld, simple.glht)
+S3method(print, cldMix)
+#S3method(response, default) 
+#S3method(responseName, default)
+S3method(t_test, default)
+S3method(t_test, formula)
+#S3method(term.names, default)
+S3method(z_test, default)
+S3method(z_test, formula)
+S3method(print, AnovaMix)
+S3method(print, CIgm)
+S3method(print, simple.glht)
+S3method(print, WF)
