@@ -214,7 +214,7 @@ wideForward <- function(formula, data, alpha = 0.2, force.in = NULL){
   # Initialization
   cl <- match.call()
   mf <- match.call(expand.dots = FALSE)
-  m <- match(c("formula", "data", "alpha", "force.in"), names(mf), 0L)
+  m  <- match(c("formula", "data"), names(mf), 0L)
   mf <- mf[c(1L, m)]
   mf$drop.unused.levels <- TRUE
   mf[[1L]] <- quote(stats::model.frame)
@@ -228,11 +228,13 @@ wideForward <- function(formula, data, alpha = 0.2, force.in = NULL){
   if(!is.null(force.in)){
     for(i in 1:length(force.in)){
       formulaIncluded <- update(formulaIncluded, paste('. ~ .+', force.in[i] ) )
+      varLeft <- setdiff(varLeft, force.in[i])
     }
   }
   modPre <- lm(formulaIncluded, data = data)
   pInclusion <- numeric()
-  for(i in 1:min(N-1,p)){ # Maximum number of includable variables
+  forcedIn   <- ifelse(!is.null(force.in), length(force.in), 0)
+  for(i in 1:min(N-1-forcedIn,p-forcedIn)){ # Maximum number of includable variables
     pThis <- numeric(length(varLeft))
     names(pThis) <- varLeft
     for(varThis in varLeft){ # Loop over remaining variables
@@ -242,14 +244,24 @@ wideForward <- function(formula, data, alpha = 0.2, force.in = NULL){
       pThis[varThis] <- anova(modPre, mod)$`Pr(>F)`[2]
     }
     pInclusion <- c(pInclusion, min(pThis))
-    if(length(pThis) > 1 && any(!is.na(pThis) & pThis < alpha)){ # Add best variable to model if any below alpha
+    if(length(pThis) > 1 && any(!is.na(pThis) & any(pThis < alpha))){ # Add best variable to model if any below alpha
       varIncluded <- c(varIncluded, names(which.min(pThis)))
       varLeft     <- setdiff(varLeft, names(which.min(pThis)))
       formulaIncluded <- update(formulaIncluded, paste('. ~ .+', names(which.min(pThis)) ) )
       names(pInclusion)[length(pInclusion)] <- names(which.min(pThis))
       modPre <- lm(formulaIncluded, data = data)
     } else {
-      names(pInclusion)[length(pInclusion)] <- paste("(",names(which.min(pThis)), ")", sep="")
+      if(any(!is.na(pThis))){
+        if(all(pThis >= alpha)){
+          names(pInclusion)[length(pInclusion)] <- paste("(",names(which.min(pThis)), ")", sep="")
+        } else {
+          formulaIncluded <- update(formulaIncluded, paste('. ~ .+', names(which.min(pThis)) ) )
+          names(pInclusion)[length(pInclusion)] <- names(which.min(pThis))
+          modPre <- lm(formulaIncluded, data = data)
+        }
+      } else {
+        pInclusion <- pInclusion[1:(length(pInclusion)-1)]
+      }
       break()
     }
   }
