@@ -1,6 +1,7 @@
 # Remove r() from fromula (possibly convert to lmer formula)
 rparse <- function (f, REML = FALSE) {
-  if (class(f) != "formula") 
+  if(!inherits(f,'formula'))
+  # if (class(f) != "formula") 
     stop("'f' must be a formula")
   right <- attr(terms(f),"term.labels") # Let R split short-hand notations first
   if( length(right) == 0){
@@ -13,7 +14,8 @@ rparse <- function (f, REML = FALSE) {
   # Main recursive loop extracting effects without r()
   for(i in 1:n){
     parsecall <- function(x) {
-      if (class(x) != "call") 
+      if(!inherits(x,'call'))
+        # if (class(x) != "call") 
         stop("'x' must be a call")
       if (length(x[[1]]) == 1) {
         return(x)
@@ -32,7 +34,8 @@ rparse <- function (f, REML = FALSE) {
   if(REML){
     for(i in 1:n){
       parsecall <- function(x) {
-        if (class(x) != "call") 
+        if(!inherits(x,'call'))
+          # if (class(x) != "call") 
           stop("'x' must be a call")
         if (length(x[[1]]) == 1) {
           return(FALSE)
@@ -83,10 +86,12 @@ is.balanced <- function(object){
 
 # Extract variable names from formula
 fparse <- function(f) {
-  if (class(f) != "formula") stop("'f' must be a formula")
+  if(!inherits(f,'formula')) stop("'f' must be a formula")
+    # if (class(f) != "formula") stop("'f' must be a formula")
   right <- f[3]
   parsecall <- function(x) {
-    if (class(x) != "call") stop("'x' must be a call")
+    if(!inherits(x,'call')) stop("'x' must be a call")
+      # if (class(x) != "call") stop("'x' must be a call")
     if (length(x[[1]]) == 1) {
       if(is.numeric(x[[1]])) {
         return()

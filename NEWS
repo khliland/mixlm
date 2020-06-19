@@ -1,4 +1,13 @@
-Version in 1.1.0
+Version 1.2.4
+================
+Date: 2019.12.13
+
+Bug fixes:
+- Fixed wrong use of class inheritance check.
+- Fixed wrong use of array recycling.
+
+
+Version 1.1.0
 ================
 Date: 2015.11.13
 

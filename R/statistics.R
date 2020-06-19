@@ -337,10 +337,12 @@ PRESS.res <- function(object=NULL, ncomp=NULL) {
   if(is.null(object) && "package:Rcmdr"%in%search()){
     try(eval(parse(text=paste("object <- ", activeModel(), sep=""))))
   }
-  if(class(object)[1]=="lm" || class(object)[1]=="lmm" || class(objects)[1]=="glm"){
+  if(inherits(object,"lm") || inherits(object,"lmm") || inherits(object,"glm")){
+  # if(class(object)[1]=="lm" || class(object)[1]=="lmm" || class(objects)[1]=="glm"){
     return(residuals(object)/(1-lm.influence(object)$hat))
   }
-  if(class(object)[1]=="mvr"){
+  if(inherits(object,"mvr")){
+  # if(class(object)[1]=="mvr"){
     if(is.null(object$validation)){
       if(dim(object$model)[1] < 10){
         warning("Refitting with leave-one-out cross-validation as no cross-validation was done")
@@ -362,10 +364,12 @@ PRESS.pred <- function(object=NULL, ncomp=NULL) {
   if(is.null(object)){
     try(eval(parse(text=paste("object <- ", activeModel(), sep=""))))
   }
-  if(class(object)[1]=="lm" || class(object)[1]=="lmm" || class(objects)[1]=="glm"){
+  if(inherits(object,"lm") || inherits(object,"lmm") || inherits(object,"glm")){
+    # if(class(object)[1]=="lm" || class(object)[1]=="lmm" || class(objects)[1]=="glm"){
     return(model.response(model.frame(object)) - residuals(object)/(1-lm.influence(object)$hat))
   }
-  if(class(object)[1]=="mvr"){
+  if(inherits(object,"mvr")){
+    # if(class(object)[1]=="mvr"){
     if(is.null(object$validation)){
       if(dim(object$model)[1] < 10){
         warning("Refitting with leave-one-out cross-validation as no cross-validation was done")
@@ -388,7 +392,8 @@ PRESS <- function(object=NULL) {
     try(eval(parse(text=paste("object <- ", activeModel(), sep=""))))
   }
   the.PRESS <- NULL
-  if(class(object)[1]=="mvr"){ # PCR/PLSR
+  if(inherits(object,"mvr")){
+    # if(class(object)[1]=="mvr"){ # PCR/PLSR
     temp.model <- object
     hasVal <- !is.null(temp.model$validation)
     hasLOO <- logical(0)
@@ -402,7 +407,8 @@ PRESS <- function(object=NULL) {
     comp0 <- temp.model$validation$PRESS0; names(comp0) <- "(intercept)"
     the.PRESS <- c(comp0,temp.model$validation$PRESS[1,])
   }
-  if(class(object)[1]=="lm" || class(object)[1]=="lmm"){ # Linear regression
+  if(inherits(object,"lm") || inherits(object,"lmm")){ # Linear regression
+    # if(class(object)[1]=="lm" || class(object)[1]=="lmm"){ # Linear regression
     the.PRESS <- sum(residuals(object)^2/(1-lm.influence(object)$hat)^2)
   }
   the.PRESS
@@ -412,7 +418,8 @@ R2pred <- function(object=NULL) {
     try(eval(parse(text=paste("object <- ", activeModel(), sep=""))))
   }
   R2pred <- NULL
-  if(class(object)[1]=="mvr"){ # PCR/PLSR
+  if(inherits(object,"mvr")){ # PCR/PLSR
+    # if(class(object)[1]=="mvr"){ # PCR/PLSR
     temp.model <- object
     hasVal <- !is.null(temp.model$validation)
     hasLOO <- logical(0)
@@ -426,7 +433,8 @@ R2pred <- function(object=NULL) {
     comp0 <- temp.model$validation$PRESS0; names(comp0) <- "(intercept)"
     R2pred <- 1-c(comp0,temp.model$validation$PRESS[1,])/((n-1)*var(temp.model$model[,1]))
   }
-  if(class(object)[1]=="lm" || class(object)[1]=="lmm"){ # Linear regression
+  if(inherits(object,"lm") || inherits(object,"lmm")){ # Linear regression
+    # if(class(object)[1]=="lm" || class(object)[1]=="lmm"){ # Linear regression
     R2pred <- 1 - sum(residuals(object)^2/(1-lm.influence(object)$hat)^2) /
       (var(object$model[,1])*(length(object$model[,1])-1))
   }
@@ -475,10 +483,12 @@ RMSEP <- function(object){
     try(eval(parse(text=paste("object <- ", activeModel(), sep=""))))
   }
   the.RMSEP <- NULL
-  if(class(object)[1]=="mvr"){ # PCR/PLSR
+  if(inherits(object,"mvr")){ # PCR/PLSR
+    # if(class(object)[1]=="mvr"){ # PCR/PLSR
     the.RMSEP <- pls::RMSEP(object, estimate="all")
   }
-  if(class(object)[1]=="lmm" || class(object)[1]=="lm"){ # Linear regression
+  if(inherits(object,"lm") || inherits(object,"lmm")){ # Linear regression
+    # if(class(object)[1]=="lmm" || class(object)[1]=="lm"){ # Linear regression
     the.RMSEP <- sqrt(mean(residuals(object)^2/(1-lm.influence(object)$hat)^2))
   }
   the.RMSEP
@@ -1584,7 +1594,8 @@ print.cldMix <- function(x, fill=TRUE, ...){
     lvl_order <- rownames(letters) #object$lvl_order
   }
   morder    <- numeric(n)
-  if(class(letters)=="logical"){
+  if(inherits(letters,'logical')){
+  # if(class(letters)=="logical"){
     letters <- as.matrix(letters)
   }
   G <- dim(letters)[2]
@@ -1648,7 +1659,7 @@ CIgrandMean <- function(object, alpha=0.05){
     X <- NULL
     C <- 1
   }
-  MS <- model[,3]%*%C
+  MS <- c(model[,3]%*%C)
   v  <- sum(model[,"Mean Sq"]*C)^2/sum((model[,"Mean Sq"]*C)^2/model[,"Df"])
   CI <- mean(model.response(model.frame(object))) + c(1,0,-1)*qt(alpha/2, v)*sqrt(MS/length(model.response(model.frame(object))))
   class(CI) <- "CIgm"

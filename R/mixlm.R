@@ -30,7 +30,8 @@ effect.labels <- function(t,data){
 		} else {
 			inter <- list()
 			for(j in 1:length(cur)){
-				if("factor"%in%class(data[[cur[j]]])){ # Handle factor main effect
+			  if(inherits(data[[cur[j]]],'factor')){ # Handle factor main effect
+				# if("factor"%in%class(data[[cur[j]]])){ # Handle factor main effect
 					levs <- levels(data[[cur[j]]])
 					if(csum){
 						n.lev <- length(levs)
@@ -78,7 +79,8 @@ effect.source <- function(t,data){
     } else {
       inter <- list()
       for(j in 1:length(cur)){
-        if("factor"%in%class(data[[cur[j]]])){ # Handle factor main effect
+        if(inherits(data[[cur[j]]], "factor")){ # Handle factor main effect
+        # if("factor"%in%class(data[[cur[j]]])){ # Handle factor main effect
           levs <- levels(data[[cur[j]]])
           if(csum){
             n.lev <- length(levs)

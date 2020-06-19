@@ -35,7 +35,7 @@ AnovaMix <- function(object){
   formula         <- formula(object)
   formula.text    <- as.character(formula)
   all.effects     <- object$random$all							  # All model effects and interactions
-  fixed.effects   <- object$random$fixed							  # All fixed effects
+  fixed.effects   <- object$random$fixed							# All fixed effects
   random.effects  <- object$random$random						  # All random effects
   main.rands.only.inter <- object$random$main.rands.only.inter     # Random effects only present in interactions
   restrictedModel <- !object$random$unrestricted
