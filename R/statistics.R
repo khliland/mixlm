@@ -615,7 +615,7 @@ prop.test.ordinary <- function (x, n, p = NULL, alternative = c("two.sided", "le
     else {
       p <- x/n
       z <- sign(DELTA)*(abs(DELTA) + YATES * sum(1/n))/sqrt(sum(p*(1-p)/n))
-      STATISTIC <- z^2
+      STATISTIC <- z
     }
   }
   if (alternative == "two.sided") {
@@ -623,9 +623,7 @@ prop.test.ordinary <- function (x, n, p = NULL, alternative = c("two.sided", "le
   } else {
     PVAL <- pnorm(z, lower.tail = (alternative == "less"))
   }
-  STATISTIC <- z
-  names(STATISTIC) <- "z"
-  PARAMETER <- Inf
+  names(STATISTIC) <- "X-squared"
   names(PARAMETER) <- "df"
   RVAL <- list(statistic = STATISTIC, parameter = PARAMETER, 
                p.value = as.numeric(PVAL), estimate = ESTIMATE, null.value = NVAL, 
