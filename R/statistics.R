@@ -6,7 +6,8 @@ stepWise <- function(model, alpha.enter=0.15, alpha.remove=0.15, full=FALSE){
   # NB! The consistency of hiearchy is somewhat unclear in this method
   #     as add() and drop() work differently in this respect.
   cat("Stepwise regression (forward-backward), alpha-to-enter: ", alpha.enter, ", alpha-to-remove: ", alpha.remove, "\n\nFull model: ", sep="")
-  full.formula <- as.formula(model$call$formula)        # Formula for full model
+  full.formula <- update(terms(model), ~., evaluate=FALSE)    # Formula for full model
+  # full.formula <- as.formula(model$call$formula)        # Formula for full model
   print(full.formula)
   cat("\n")
   current.formula <- update(full.formula, ~ 1)          # Response against intercept formula
@@ -77,7 +78,8 @@ stepWise <- function(model, alpha.enter=0.15, alpha.remove=0.15, full=FALSE){
 # Stepwise backward/forward
 stepWiseBack <- function(model, alpha.remove=0.15, alpha.enter=0.15, full=FALSE){
   cat("Stepwise regression (backward-forward), alpha-to-remove: ", alpha.remove, ", alpha-to-enter: ", alpha.enter, "\n\nFull model: ", sep="")
-  full.formula <- as.formula(model$call$formula)        # Formula for full model
+  full.formula <- update(terms(model), ~., evaluate=FALSE)    # Formula for full model
+  # full.formula <- as.formula(model$call$formula)        # Formula for full model
   print(full.formula)
   cat("\n")
   current.formula <- full.formula                       # Response against intercept formula
@@ -147,7 +149,8 @@ best.subsets <- function(model, nbest=5, nvmax, digits, force.in='NULL'){
   if(missing(nvmax)){
     nvmax <- length(attr(terms(model),"term.labels")) # Number of possible regressors
   }
-  full.formula <- as.formula(model$call$formula)        # Formula for full model
+  full.formula <- update(terms(model), ~., evaluate=FALSE)    # Formula for full model
+  # full.formula <- as.formula(model$call$formula)        # Formula for full model
   current.data <- model$call$data
   subsets <- eval(parse(text = paste("regsubsets(full.formula, data=", current.data, ", nbest=nbest, nvmax=nvmax, force.in=",force.in,")")))
   ss <- summary(subsets)
@@ -163,7 +166,8 @@ best.subsets <- function(model, nbest=5, nvmax, digits, force.in='NULL'){
 # Forward addition
 forward <- function(model, alpha=0.2, full=FALSE, force.in=NULL){
   cat("Forward selection, alpha-to-enter: ", alpha, "\n\nFull model: ", sep="")
-  full.formula <- as.formula(model$call$formula)       # Formula for full model
+  full.formula <- update(terms(model), ~., evaluate=FALSE)    # Formula for full model
+  # full.formula <- as.formula(model$call$formula)       # Formula for full model
   print(full.formula)
   cat("\n")
   if(is.null(force.in)){
@@ -283,7 +287,8 @@ print.WF <- function(x, ...){
 # Backward elimination
 backward <- function(model, alpha=0.2, full=FALSE, hierarchy=TRUE, force.in=NULL){
   cat("Backward elimination, alpha-to-remove: ", alpha, "\n\nFull model: ", sep="")
-  current.dropable <- current.formula <- as.formula(model$call$formula)    # Formula for full model
+  current.dropable <- current.formula <- update(terms(model), ~., evaluate=FALSE)    # Formula for full model
+#  current.dropable <- current.formula <- as.formula(model$call$formula)    # Formula for full model
   print(current.formula)
   if(is.null(force.in)){
     possible.effects <- attr(terms(model),"term.labels") # Vector of possible removed regressors
