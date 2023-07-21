@@ -113,3 +113,17 @@ qtukey1df <- matrix(c(8.929,13.437,16.358,18.488,20.15,21.504,22.642,23.621,24.4
                       35.99,54,65.69,74.22,80.87,86.29,90.85,94.77,98.2,101.3,104,106.5,108.8,110.8,112.7,114.45,116.2,117.7,119.2,
                       90.024,135.041,164.258,185.575,202.21,215.769,227.166,236.966,245.542,253.151,259.979,266.165,271.812,277.003,281.803,286.263,290.426,294.328,297.997), 19,4)
 dimnames(qtukey1df) <- list(k = 2:20, P = c(0.9, 0.95, 0.975, 0.99))
+
+# Weigthed contrasts
+contr.weighted <- function (x, base){
+  levs <- levels(x)
+  frequencies <- table(x)
+  if(missing(base))
+    base <- names(which.max(frequencies))
+#    base <- levs[length(levs)]
+  base <- which(levs == base)
+  contr <- contr.treatment(length(frequencies), base = base)
+  contr[base, ] <- -1 * frequencies[-base]/frequencies[base]
+  dimnames(contr) <- list(names(frequencies),names(frequencies[-base]))
+  return(contr)
+}

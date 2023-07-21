@@ -2,10 +2,10 @@
 # Set contrasts and report
 .onAttach <- function(libname, pkgname) {
   # Runs when attached to search() path such as by library() or require()
-  options(contrasts=c('contr.sum','contr.poly'))
+#  options(contrasts=c('contr.sum','contr.poly'))
   if (interactive()) {
     packageStartupMessage('mixlm ',as.character(utils::packageVersion("mixlm")))
-    packageStartupMessage('Setting default contrast to sum-to-zero.')
+#    packageStartupMessage("Setting default contrast to sum-to-zero.\nSee argument 'coding' for 'lm' for more options.")
   }
 }
 
@@ -60,7 +60,7 @@ effect.labels <- function(t,data){
 
 
 effect.source <- function(t,data){
-  csum <- ifelse(options("contrasts")[[1]][1] == "contr.sum",	TRUE, FALSE)
+  csum <- ifelse(options("contrasts")[[1]][1] %in% c("contr.weighted","contr.sum"),	TRUE, FALSE)
   effects   <- attr(t, "term.labels")
   factors   <- attr(t, "factors")
   intercept <- attr(t, "intercept")

@@ -7,7 +7,7 @@
 
 anova.lmm <- function(object, ...){
   if(!is.null(object$random)){
-    stop("Only type III error Anova() supported in mixed/random models")
+    return(AnovaMix(object, 1))
   } else {
     class(object) <- 'lm'
     return(anova(object,...))
@@ -18,10 +18,15 @@ anova.lmm <- function(object, ...){
 Anova.lmm <- function(mod, ...){
   mf <- match.call()
   if(!is.null(mod$random)){
-    if(mf$type=="II" || mf$type=="2"){
-      warning("Using (default) type III error supported for mixed/random models")
+    if(mf$type=="I" || mf$type=="1"){
+      return(AnovaMix(mod, 1))
+    } else { 
+      if(mf$type=="II" || mf$type=="2"){
+        return(AnovaMix(mod, 2))
+      } else {
+        return(AnovaMix(mod, 3))
+      }
     }
-    return(AnovaMix(mod))
   } else {
     class(mod) <- 'lm'
     return(Anova(mod, ...))
@@ -31,7 +36,7 @@ Anova.lmm <- function(mod, ...){
 
 ## FIXME: Her antas modellen å kun inneholde faktorer, ingen andre effekter. Kan gi rare resultater!
 # Mixed model ANOVA
-AnovaMix <- function(object){
+AnovaMix <- function(object, SStype){
   formula         <- formula(object)
   formula.text    <- as.character(formula)
   all.effects     <- object$random$all							  # All model effects and interactions
@@ -56,13 +61,18 @@ AnovaMix <- function(object){
   n.randoms    <- length(ind.randoms)
   
   # Estimate fixed effect Anova
-  opt <- options("contrasts")
-  options(contrasts=c('contr.sum','contr.poly'))
+#  opt <- options("contrasts")
+#  options(contrasts=c('contr.sum','contr.poly'))
   noRandom <- update(object)
   noRandom$random <- NULL
   class(noRandom) <- "lm"
-  fixed.model <- as.data.frame(Anova(noRandom, type='III', singular.ok=TRUE))
-  options(contrasts=opt$contrasts)
+  if(SStype == 1)
+    fixed.model <- as.data.frame(anova(noRandom))
+  if(SStype == 2)
+    fixed.model <- as.data.frame(Anova(noRandom, type='II', singular.ok=TRUE))
+  if(SStype == 3)
+    fixed.model <- as.data.frame(Anova(noRandom, type='III', singular.ok=TRUE))
+  # options(contrasts=opt$contrasts)
   # 	fixed.model <- fixed.model[-1,] # Remove intercept
   fixed.model <- fixed.model[c(all.effects,"Residuals"),] # Sort according to all.effects
   if(!any("Mean Sq"%in%colnames(fixed.model))){
@@ -78,6 +88,7 @@ AnovaMix <- function(object){
     which.contains <- numeric()
     for(j in 1:n.effects){ # Find all other effects containing this.effect
       effect.names <- is.element(strsplit(all.effects[j],":")[[1]],this.effect)
+      # Check if current effect is contained in another effect of higher interaction level
       if(i!=j && sum(effect.names)==length(this.effect) && length(effect.names)>length(this.effect)){
         which.contains <- union(which.contains,j)}
     }
@@ -87,10 +98,13 @@ AnovaMix <- function(object){
       approved.interaction.fixed <- numeric(length(which.contains))
       for(j in 1:length(which.contains)){
         if(restrictedModel){
+          # Check if any of the other main effect contained in the higher order interaction is random
           approved.interaction[j] <- prod(is.element(setdiff(strsplit(all.effects[which.contains],":")[[j]],strsplit(all.effects[i],":")[[1]]),c(random.effects,main.rands.only.inter)))}
         else{
           if(any(is.element(ind.fixed,i))){
+            # Check if any of the other main effects contained in the higher order interaction is fixed
             approved.interaction.fixed[j] <- prod(is.element(setdiff(strsplit(all.effects[which.contains],":")[[j]],strsplit(all.effects[i],":")[[1]]),fixed.effects))}
+          # Check if all of the main effects contained in the higher order interaction are random
           approved.interaction[j] <- 1-prod(!is.element(strsplit(all.effects[which.contains],":")[[j]],c(random.effects,main.rands.only.inter)))}
       }
       if(length(which(approved.interaction==1))>0){
@@ -106,7 +120,7 @@ AnovaMix <- function(object){
       approved.interactions[[i]] <- FALSE
       approved.interactions.fixed[[i]] <- FALSE}
   }
-  
+
   # Find variance components (except MSerror), 
   # and find linear combinations needed to produce denominators of F-statistics
   mix.model.attr <- list()
@@ -227,9 +241,9 @@ print.AnovaMix <- function(x,...){
   print(output2)
   cat("(VC = variance component)\n\n")
   print(output3)
-  if(!is.balanced(object$lm)){
-    cat("\nWARNING: Unbalanced data may lead to poor estimates\n")
-  }
+#  if(!is.balanced(object$lm)){
+#    cat("\nWARNING: Unbalanced data may lead to poor estimates\n")
+#  }
 }
 
 # lm from stats, edited to use treatment names in sum contrasts
@@ -241,7 +255,7 @@ if(requireNamespace("lme4", quietly = TRUE)){
 }
 lm <- function (formula, data, subset, weights, na.action,
                 method = "qr", model = TRUE, x = FALSE, y = FALSE,
-                qr = TRUE, singular.ok = TRUE, contrasts = NULL,
+                qr = TRUE, singular.ok = TRUE, contrasts = "contr.sum",
                 offset, unrestricted = TRUE, REML = NULL, ...)
 {
   ret.x <- x
@@ -292,6 +306,19 @@ lm <- function (formula, data, subset, weights, na.action,
             domain = NA)
   mt <- attr(mf, "terms") # allow model.frame to update it
   y <- model.response(mf, "numeric")
+  # Create contrast list if single character argument is supplied to contrasts
+  contrasts.orig <- contrasts
+  if(!is.null(contrasts)){
+    if(is.character(contrasts)){
+      facs <- which(unlist(lapply(mf, inherits, what = "factor")))
+      if(contrasts == "contr.weighted")
+        contrasts <- lapply(mf[facs], "contr.weighted")
+      else {
+        contrasts <- as.list(rep(contrasts, length(facs)))
+        names(contrasts) <- names(facs)
+      }
+    }
+  }
   ## avoid any problems with 1D or nx1 arrays by as.vector.
   w <- as.vector(model.weights(mf))
   if(!is.null(w) && !is.numeric(w))
@@ -318,11 +345,14 @@ lm <- function (formula, data, subset, weights, na.action,
   else {
     x <- model.matrix(mt, mf, contrasts)
     ## Edited by KHL
-    if(is.null(contrasts) && (options("contrasts")[[1]][1]!="contr.treatment" || options("contrasts")[[1]][1]!="contr.poly") && !missing(data)){
+    if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.sum", "contr.weighted")) ||
+       (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.sum", "contr.weighted"))) ||
+       (is.character(contrasts.orig) && contrasts.orig %in% c("contr.sum", "contr.weighted"))){
+#    if((is.list(contrasts) || is.null(contrasts)) && (options("contrasts")[[1]][1] %in% c("contr.sum", "contr.weighted")) && !missing(data)){ #  || options("contrasts")[[1]][1]!="contr.poly"
       col.names   <- effect.labels(mt,mf) # mt er "terms" fra formula, x er model.matrix
       if(length(col.names)==length(colnames(x))){
         colnames(x) <- effect.labels(mt,mf)
-        effect.sources <- effect.source(mt,data)
+        effect.sources <- effect.source(mt,mf)
       }
     }
     ## End edit
@@ -481,8 +511,8 @@ summary.lmm <- function (object, correlation = FALSE, symbolic.cor = FALSE, ...)
     #  resvar <- c(rss/rdf,errors[inds]/err.df[inds])
     resvar <- c(rss/rdf,errors[inds])[Qr$pivot[p1]]
   }
-  if (is.finite(resvar) && resvar < (mean(f)^2 + var(f)) * 
-      1e-30) 
+  if (any(is.finite(resvar) & resvar < (mean(f)^2 + var(f)) * 
+      1e-30)) 
     warning("essentially perfect fit: summary may be unreliable")
   R    <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
   se   <- sqrt(diag(R) * resvar)
@@ -571,6 +601,6 @@ confint.lmm <- function (object, parm, level = 0.95, ...)
   ci[] <- cf[parm] + ses %o% fac
   ci
 }
-format.perc <- function (probs, digits) 
-  paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits), 
+format.perc <- function (x, digits, ...) 
+  paste(format(100 * x, trim = TRUE, scientific = FALSE, digits = digits, ...), 
         "%")

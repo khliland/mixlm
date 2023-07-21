@@ -25,7 +25,8 @@
 \usage{
 lm(formula, data, subset, weights, na.action,
    method = "qr", model = TRUE, x = FALSE, y = FALSE, qr = TRUE,
-   singular.ok = TRUE, contrasts = NULL, offset, unrestricted = TRUE, REML = NULL, \dots)
+   singular.ok = TRUE, contrasts = "contr.sum", offset, 
+   unrestricted = TRUE, REML = NULL, \dots)
 }
 \arguments{
   \item{formula}{an object of class \code{"\link{formula}"} (or one that
@@ -67,8 +68,10 @@ lm(formula, data, subset, weights, na.action,
   \item{singular.ok}{logical. If \code{FALSE} (the default in S but
     not in \R) a singular fit is an error.}
 
-  \item{contrasts}{an optional list. See the \code{contrasts.arg}
-    of \code{\link{model.matrix.default}}.}
+  \item{contrasts}{character indicating which coding should be applied
+    to all \code{factor}s or an optional list. See the \code{contrasts.arg}
+    of \code{\link{model.matrix.default}}. Defaults to \code{"contr.sum"}. 
+    See Details for more information.}
 
   \item{offset}{this can be used to specify an \emph{a priori} known
     component to be included in the linear predictor during fitting.
@@ -78,8 +81,8 @@ lm(formula, data, subset, weights, na.action,
     specified their sum is used.  See \code{\link{model.offset}}.}
 
   \item{unrestricted}{additional argument for switching between unrestricted and restricted models if including random variables.}
-  
-  \item{REML}{ is used to invoke restricted maximum likelihood (TRUE)
+
+  \item{REML}{is used to invoke restricted maximum likelihood (TRUE)
   or maximum likelihood (FALSE) estimation instead of least squares.}
 
   \item{\dots}{additional arguments to be passed to the low level
@@ -130,6 +133,13 @@ lm(formula, data, subset, weights, na.action,
   All of \code{weights}, \code{subset} and \code{offset} are evaluated
   in the same way as variables in \code{formula}, that is first in
   \code{data} and then in the environment of \code{formula}.
+  
+  The \code{contrasts} argument is applied when the \code{lm} model is
+  fitted. In additional to the standard contrasts from the \code{stats}
+  package, one can choose weighted coding: \code{contr.weighted} which
+  balances unbalanced data through factor weighting. Different from the
+  original version of \code{lm}, a single contrast can be indicated
+  to automatically be applied to all \code{factor}s.
 }
 \value{
   \code{lm} returns an object of \code{\link{class}} \code{c("lmm","lm")} or for

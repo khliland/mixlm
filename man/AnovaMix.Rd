@@ -9,10 +9,11 @@ Uses output from lm() in mixlm package to compute ANOVA table,
 variance components and errors.
 }
 \usage{
-AnovaMix(object)
+AnovaMix(object, SStype)
 }
 \arguments{
   \item{object}{ object fitted by lm (mixlm package) containing at least one random effect.}
+  \item{SStype}{ type of sums-of-squares (I/II/III) for Analysis of Variance.}
 }
 \details{
 \code{AnovaMix} can either be invoked directly or through the Anova() function (with type III error).

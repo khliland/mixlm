@@ -33,10 +33,10 @@ plotprops(Y, X, doscaleX = FALSE, docenterX = TRUE, ncomp, subset)
 Only plotting.
 }
 \references{
-Helland, I.S. & T. Almøy (1994) Comparison of prediction methods when only a few components are relevant. JASA 89, 583-591.
+Helland, I.S. & T. AlmÃ¸y (1994) Comparison of prediction methods when only a few components are relevant. JASA 89, 583-591.
 }
 \author{
-Solve Sæbø
+Solve SÃ¦bÃ¸
 }
 
 \examples{

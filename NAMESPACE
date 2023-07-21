@@ -5,7 +5,7 @@ importFrom(pracma,rref)
 importFrom(leaps, regsubsets)
 importFrom("graphics", "axis", "box", "mtext", "par", "plot", "points")
 importFrom("stats", ".getXlevels", "add1", "anova", "aov",
-           "as.formula", "coef", "complete.cases", "cov", "drop.scope",
+           "as.formula", "coef", "complete.cases", "contr.treatment", "cov", "drop.scope",
            "drop1", "formula", "gaussian", "hatvalues",
            "is.empty.model", "lm.fit", "lm.influence", "lm.wfit",
            "model.extract", "model.frame", "model.matrix",
@@ -22,6 +22,7 @@ export(
     cld,
     confusion,
 #    ConjComp,
+    contr.weighted,
 	  CIgrandMean,
     effect.labels,
     forward,
@@ -70,6 +71,7 @@ export(
     z_test_sum
 )
 
+S3method(anova, lmm)
 S3method(Anova, lmm)
 S3method(summary, lmm)
 S3method(print, summary.lmm)
