@@ -34,7 +34,7 @@ Anova.lmm <- function(mod, ...){
 }
 
 
-## FIXME: Her antas modellen å kun inneholde faktorer, ingen andre effekter. Kan gi rare resultater!
+## FIXME: Her antas modellen ? kun inneholde faktorer, ingen andre effekter. Kan gi rare resultater!
 # Mixed model ANOVA
 AnovaMix <- function(object, SStype){
   formula         <- formula(object)
@@ -67,11 +67,11 @@ AnovaMix <- function(object, SStype){
   noRandom$random <- NULL
   class(noRandom) <- "lm"
   if(SStype == 1)
-    fixed.model <- as.data.frame(anova(noRandom))
+    fixed.model <- as.data.frame(stats::anova(noRandom))
   if(SStype == 2)
-    fixed.model <- as.data.frame(Anova(noRandom, type='II', singular.ok=TRUE))
+    fixed.model <- as.data.frame(car::Anova(noRandom, type='II', singular.ok=TRUE))
   if(SStype == 3)
-    fixed.model <- as.data.frame(Anova(noRandom, type='III', singular.ok=TRUE))
+    fixed.model <- as.data.frame(car::Anova(noRandom, type='III', singular.ok=TRUE))
   # options(contrasts=opt$contrasts)
   # 	fixed.model <- fixed.model[-1,] # Remove intercept
   fixed.model <- fixed.model[c(all.effects,"Residuals"),] # Sort according to all.effects
