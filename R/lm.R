@@ -66,11 +66,11 @@ AnovaMix <- function(object, SStype){
   noRandom <- update(object)
   noRandom$random <- NULL
   class(noRandom) <- "lm"
-  if(SStype == 1)
+  if(SStype == 1 || SStype == "I")
     fixed.model <- as.data.frame(stats::anova(noRandom))
-  if(SStype == 2)
+  if(SStype == 2 || SStype == "II")
     fixed.model <- as.data.frame(car::Anova(noRandom, type='II', singular.ok=TRUE))
-  if(SStype == 3)
+  if(SStype == 3 || SStype == "III")
     fixed.model <- as.data.frame(car::Anova(noRandom, type='III', singular.ok=TRUE))
   # options(contrasts=opt$contrasts)
   # 	fixed.model <- fixed.model[-1,] # Remove intercept
