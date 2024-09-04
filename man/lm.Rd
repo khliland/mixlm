@@ -24,7 +24,7 @@
 }
 \usage{
 lm(formula, data, subset, weights, na.action,
-   method = "qr", model = TRUE, x = FALSE, y = FALSE, qr = TRUE,
+   method = "qr", model = TRUE, x = TRUE, y = TRUE, qr = TRUE,
    singular.ok = TRUE, contrasts = "contr.sum", offset, 
    unrestricted = TRUE, REML = NULL, \dots)
 }

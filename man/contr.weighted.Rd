@@ -24,7 +24,7 @@ respective \code{levels} as weights are computed from the frequencies of the
 A \code{matrix} with \code{n} rows and \code{n-1} values.
 }
 \references{
-Nieuwenhuis, R.; Grotenhuis, M.; Pelzer, B. Weighted Effect Coding for Observational Data with wec. R. J. 2017, 9, 477–485.
+Nieuwenhuis, R.; Grotenhuis, M.; Pelzer, B. Weighted Effect Coding for Observational Data with wec. R. J. 2017, 9, 477-485.
 }
 \author{
 Kristian Hovde Liland

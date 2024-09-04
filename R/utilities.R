@@ -114,7 +114,11 @@ qtukey1df <- matrix(c(8.929,13.437,16.358,18.488,20.15,21.504,22.642,23.621,24.4
                       90.024,135.041,164.258,185.575,202.21,215.769,227.166,236.966,245.542,253.151,259.979,266.165,271.812,277.003,281.803,286.263,290.426,294.328,297.997), 19,4)
 dimnames(qtukey1df) <- list(k = 2:20, P = c(0.9, 0.95, 0.975, 0.99))
 
-# Weigthed contrasts
+# Weighted sum-to-zero contrasts by cell count scaling
+# contr.sum_ccs <- stats::contr.sum
+# Scaling is performed in lm()
+
+# Weighted contrasts
 contr.weighted <- function (x, base){
   levs <- levels(x)
   frequencies <- table(x)

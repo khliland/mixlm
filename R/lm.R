@@ -57,13 +57,14 @@ AnovaMix <- function(object, SStype){
   ind.randoms <- numeric()
   ind.randoms <- match(random.effects,all.effects) # Placement of random effects in "all.effects"
   ind.fixed   <- match(fixed.effects,all.effects)  # Placement of fixed effects in "all.effects"
-  ind.fixed <- setdiff(1:n.effects,ind.randoms)										
-  n.randoms    <- length(ind.randoms)
+  ind.fixed   <- setdiff(1:n.effects,ind.randoms)										
+  n.randoms   <- length(ind.randoms)
   
   # Estimate fixed effect Anova
-#  opt <- options("contrasts")
-#  options(contrasts=c('contr.sum','contr.poly'))
-  noRandom <- update(object)
+  #  opt <- options("contrasts")
+  #  options(contrasts=c('contr.sum','contr.poly'))
+  #  noRandom <- update(object)
+  noRandom <- object
   noRandom$random <- NULL
   class(noRandom) <- "lm"
   if(SStype == 1 || SStype == "I")
@@ -99,13 +100,15 @@ AnovaMix <- function(object, SStype){
       for(j in 1:length(which.contains)){
         if(restrictedModel){
           # Check if any of the other main effect contained in the higher order interaction is random
-          approved.interaction[j] <- prod(is.element(setdiff(strsplit(all.effects[which.contains],":")[[j]],strsplit(all.effects[i],":")[[1]]),c(random.effects,main.rands.only.inter)))}
-        else{
+          approved.interaction[j] <- prod(is.element(setdiff(strsplit(all.effects[which.contains],":")[[j]],strsplit(all.effects[i],":")[[1]]),c(random.effects,main.rands.only.inter)))
+        } else {
           if(any(is.element(ind.fixed,i))){
             # Check if any of the other main effects contained in the higher order interaction is fixed
-            approved.interaction.fixed[j] <- prod(is.element(setdiff(strsplit(all.effects[which.contains],":")[[j]],strsplit(all.effects[i],":")[[1]]),fixed.effects))}
+            approved.interaction.fixed[j] <- prod(is.element(setdiff(strsplit(all.effects[which.contains],":")[[j]],strsplit(all.effects[i],":")[[1]]),fixed.effects))
+          }
           # Check if all of the main effects contained in the higher order interaction are random
-          approved.interaction[j] <- 1-prod(!is.element(strsplit(all.effects[which.contains],":")[[j]],c(random.effects,main.rands.only.inter)))}
+          approved.interaction[j] <- 1-prod(!is.element(strsplit(all.effects[which.contains],":")[[j]],c(random.effects,main.rands.only.inter)))
+        }
       }
       if(length(which(approved.interaction==1))>0){
         approved.interactions[[i]] <- which.contains[which(approved.interaction==1)]}
@@ -120,7 +123,7 @@ AnovaMix <- function(object, SStype){
       approved.interactions[[i]] <- FALSE
       approved.interactions.fixed[[i]] <- FALSE}
   }
-
+  
   # Find variance components (except MSerror), 
   # and find linear combinations needed to produce denominators of F-statistics
   mix.model.attr <- list()
@@ -241,9 +244,9 @@ print.AnovaMix <- function(x,...){
   print(output2)
   cat("(VC = variance component)\n\n")
   print(output3)
-#  if(!is.balanced(object$lm)){
-#    cat("\nWARNING: Unbalanced data may lead to poor estimates\n")
-#  }
+  #  if(!is.balanced(object$lm)){
+  #    cat("\nWARNING: Unbalanced data may lead to poor estimates\n")
+  #  }
 }
 
 # lm from stats, edited to use treatment names in sum contrasts
@@ -254,7 +257,7 @@ if(requireNamespace("lme4", quietly = TRUE)){
   lmer <- function()warning("Install package lme4 to enable REML/ML modelling.")
 }
 lm <- function (formula, data, subset, weights, na.action,
-                method = "qr", model = TRUE, x = FALSE, y = FALSE,
+                method = "qr", model = TRUE, x = TRUE, y = TRUE,
                 qr = TRUE, singular.ok = TRUE, contrasts = "contr.sum",
                 offset, unrestricted = TRUE, REML = NULL, ...)
 {
@@ -309,14 +312,17 @@ lm <- function (formula, data, subset, weights, na.action,
   # Create contrast list if single character argument is supplied to contrasts
   contrasts.orig <- contrasts
   if(!is.null(contrasts)){
-    if(is.character(contrasts)){
+    if(is.character(contrasts) && length(contrasts)==1){
       facs <- which(unlist(lapply(mf, inherits, what = "factor")))
-      if(contrasts == "contr.weighted")
-        contrasts <- lapply(mf[facs], "contr.weighted")
-      else {
-        contrasts <- as.list(rep(contrasts, length(facs)))
-        names(contrasts) <- names(facs)
-      }
+      if(contrasts == "contr.treatment.last"){ # Force last level of factor to base level
+        contrasts <- lapply(mf[names(facs)], function(f){nl <- nlevels(f); contr.treatment(nl,nl)})
+      } else
+        if(contrasts == "contr.weighted")
+          contrasts <- lapply(mf[facs], "contr.weighted")
+        else {
+          contrasts <- as.list(rep(contrasts, length(facs)))
+          names(contrasts) <- names(facs)
+        }
     }
   }
   ## avoid any problems with 1D or nx1 arrays by as.vector.
@@ -330,6 +336,7 @@ lm <- function (formula, data, subset, weights, na.action,
                     length(offset), NROW(y)), domain = NA)
   }
   
+  # ccs <- FALSE
   if (is.empty.model(mt)) {
     x <- NULL
     z <- list(coefficients = if (is.matrix(y))
@@ -344,15 +351,58 @@ lm <- function (formula, data, subset, weights, na.action,
   }
   else {
     x <- model.matrix(mt, mf, contrasts)
-    ## Edited by KHL
+    effect.sources <- effect.source(mt,mf)
+    ## Edited by KHL CCS = Cell Count Scaling
     if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.sum", "contr.weighted")) ||
        (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.sum", "contr.weighted"))) ||
        (is.character(contrasts.orig) && contrasts.orig %in% c("contr.sum", "contr.weighted"))){
-#    if((is.list(contrasts) || is.null(contrasts)) && (options("contrasts")[[1]][1] %in% c("contr.sum", "contr.weighted")) && !missing(data)){ #  || options("contrasts")[[1]][1]!="contr.poly"
-      col.names   <- effect.labels(mt,mf) # mt er "terms" fra formula, x er model.matrix
+      #    if((is.list(contrasts) || is.null(contrasts)) && (options("contrasts")[[1]][1] %in% c("contr.sum", "contr.weighted")) && !missing(data)){ #  || options("contrasts")[[1]][1]!="contr.poly"
+      col.names   <- effect.labels(mt,mf) # mt is "terms" from formula, x is model.matrix
       if(length(col.names)==length(colnames(x))){
-        colnames(x) <- effect.labels(mt,mf)
-        effect.sources <- effect.source(mt,mf)
+        colnames(x) <- col.names
+        # effect.sources <- effect.source(mt,mf)
+      }
+#      # Special handling of interactions for ccs coding
+#      if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.sum_ccs")) ||
+#         (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.sum_ccs"))) ||
+#         (is.character(contrasts.orig) && contrasts.orig %in% c("contr.sum_ccs"))){   
+#        int <- interaction(mf[unlist(lapply(mf,class))=="factor"])
+#        nlev <- nlevels(int)
+#        tint <- table(int)
+#        N <- round(median(tint))
+#        #levels(int) <- sqrt(N/tint)
+#        wgt <- rep(1, nrow(x))
+#        for(i in 1:nlevels(int)){
+#          wgt[int==levels(int)[i]] <- sqrt(N/tint[i])
+#        }
+#        x <- x*wgt
+#        ccs <- TRUE
+#      }
+      # Special handling of interactions for weighted coding
+      if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.weighted")) ||
+         (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.weighted"))) ||
+         (is.character(contrasts.orig) && contrasts.orig %in% c("contr.weighted"))){      
+        mt_factors <- attr(mt, "factors")
+        main_interactions <- colSums(mt_factors)
+        if(any(main_interactions>1)){
+          # Use contr.sum as basis for weighted interactions
+          contsum <- as.list(rep("contr.sum", length(facs)))
+          names(contsum) <- names(facs)
+          x_sum <- model.matrix(mt, mf, contsum)
+          ass <- attr(x_sum, "assign")
+          
+          for(i in which(main_interactions>1)){
+            # Convert columns of model.matrix to factor and use to find weights
+            int_fac <- interaction(mf[rownames(mt_factors)[mt_factors[,i]==1]])
+            n_each  <- table(int_fac)
+            if(any(n_each==0))
+              warning(paste0("Contrast error due to empty cell"))
+            x_col <- which(ass==i)
+            for(lev in levels(int_fac)){
+              x[int_fac == lev, x_col] = x_sum[int_fac == lev, x_col] * min(n_each)/n_each[lev]
+            }
+          }
+        }
       }
     }
     ## End edit
@@ -387,6 +437,8 @@ lm <- function (formula, data, subset, weights, na.action,
   }
   if(exists("effect.sources") && !is.null(effect.sources))
     z$effect.sources <- effect.sources
+#  if(ccs) # Save contr.sum_ccs weights
+#    z$ccs <- wgt
   ## End edit
   z
 }
@@ -512,7 +564,7 @@ summary.lmm <- function (object, correlation = FALSE, symbolic.cor = FALSE, ...)
     resvar <- c(rss/rdf,errors[inds])[Qr$pivot[p1]]
   }
   if (any(is.finite(resvar) & resvar < (mean(f)^2 + var(f)) * 
-      1e-30)) 
+          1e-30)) 
     warning("essentially perfect fit: summary may be unreliable")
   R    <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
   se   <- sqrt(diag(R) * resvar)
