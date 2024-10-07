@@ -13,6 +13,9 @@
 #' parentheses in the diagram. Manually placed terms are supported to some
 #' extent, see example for usage.
 #' 
+#' @details
+#' Plotting is handled by the \code{hasse} function from the \code{hasseDiagram}
+#' package, requiring also the \code{Rgraphviz} package.
 #'
 #' @return A list with the levels of the diagram and the adjacency matrix.
 #' @export
@@ -31,7 +34,7 @@
 #' mod <- lm(y~A*B*C + D + E%in%D, data=dat)
 #' (an <- Anova(mod, type="II"))
 #' H <- hasseMod(mod)
-#' \notrun{ # Requires installation of Rgraphviz
+#' \notrun{ # Requires installation of Rgraphviz and hasseDiagram
 #' library(Rgraphviz)
 #' hasse(H$hasse, parameters=list(cluster = FALSE, arrows = "none", edgeColor = "darkred"))
 #' }
@@ -40,7 +43,7 @@
 #' modv <- lm(y~A*r(B) + r(Ind), data=dat)
 #' (anv <- Anova(mod, type="II"))
 #' Hv <- hasseMod(modv, manualTerms=c("Ind"), manualParents=list(c("A")))
-#' \notrun{ # Requires installation og Rgraphviz
+#' \notrun{ # Requires installation of Rgraphviz and hasseDiagram
 #' hasse(Hv$hasse, parameters=list(cluster = FALSE, arrows = "none", edgeColor = "darkred"))
 #' }
 hasseMod <- function(object, manualTerms=NULL, manualParents=NULL, 
