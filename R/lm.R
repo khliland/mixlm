@@ -309,7 +309,7 @@ lm <- function (formula, data, subset, weights, na.action,
             domain = NA)
   mt <- attr(mf, "terms") # allow model.frame to update it
   y <- model.response(mf, "numeric")
-  # Create contrast list if single character argument is supplied to contrasts
+  # Create contrast list if single character argument is supplied to contrasts (edit by KHL)
   contrasts.orig <- contrasts
   if(!is.null(contrasts)){
     if(is.character(contrasts) && length(contrasts)==1){
@@ -353,15 +353,20 @@ lm <- function (formula, data, subset, weights, na.action,
     x <- model.matrix(mt, mf, contrasts)
     effect.sources <- effect.source(mt,mf)
     ## Edited by KHL CCS = Cell Count Scaling
+    col.names   <- effect.labels(mt,mf,contrasts) # mt is "terms" from formula, x is model.matrix
+    if(length(col.names)==length(colnames(x))){
+      colnames(x) <- col.names
+      # effect.sources <- effect.source(mt,mf)
+    }
     if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.sum", "contr.weighted")) ||
        (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.sum", "contr.weighted"))) ||
        (is.character(contrasts.orig) && contrasts.orig %in% c("contr.sum", "contr.weighted"))){
       #    if((is.list(contrasts) || is.null(contrasts)) && (options("contrasts")[[1]][1] %in% c("contr.sum", "contr.weighted")) && !missing(data)){ #  || options("contrasts")[[1]][1]!="contr.poly"
-      col.names   <- effect.labels(mt,mf) # mt is "terms" from formula, x is model.matrix
-      if(length(col.names)==length(colnames(x))){
-        colnames(x) <- col.names
-        # effect.sources <- effect.source(mt,mf)
-      }
+      # col.names   <- effect.labels(mt,mf,contrasts) # mt is "terms" from formula, x is model.matrix
+      # if(length(col.names)==length(colnames(x))){
+      #   colnames(x) <- col.names
+      #   # effect.sources <- effect.source(mt,mf)
+      # }
 #      # Special handling of interactions for ccs coding
 #      if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.sum_ccs")) ||
 #         (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.sum_ccs"))) ||

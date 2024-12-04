@@ -10,7 +10,7 @@ glm <- function(formula, family = gaussian, data, weights,
                 control = list(...),
                 model = TRUE, method = "glm.fit",
                 x = FALSE, y = TRUE,
-                contrasts = NULL, REML = TRUE, ...)
+                contrasts = "contr.sum", REML = TRUE, ...)
 {
   call <- match.call()
   ## family
@@ -74,6 +74,22 @@ glm <- function(formula, family = gaussian, data, weights,
   mt <- attr(mf, "terms") # allow model.frame to have updated it
   
   Y <- model.response(mf, "any") # e.g. factors are allowed
+  # Create contrast list if single character argument is supplied to contrasts (edit by KHL)
+  contrasts.orig <- contrasts
+  if(!is.null(contrasts)){
+    if(is.character(contrasts) && length(contrasts)==1){
+      facs <- which(unlist(lapply(mf, inherits, what = "factor")))
+      if(contrasts == "contr.treatment.last"){ # Force last level of factor to base level
+        contrasts <- lapply(mf[names(facs)], function(f){nl <- nlevels(f); contr.treatment(nl,nl)})
+      } else
+        if(contrasts == "contr.weighted")
+          contrasts <- lapply(mf[facs], "contr.weighted")
+        else {
+          contrasts <- as.list(rep(contrasts, length(facs)))
+          names(contrasts) <- names(facs)
+        }
+    }
+  }
   ## avoid problems with 1D arrays, but keep names
   if(length(dim(Y)) == 1L) {
     nm <- rownames(Y)
@@ -83,11 +99,47 @@ glm <- function(formula, family = gaussian, data, weights,
   ## null model support
   if (!is.empty.model(mt)){
     X <- model.matrix(mt, mf, contrasts)
-    ## Edited by KHL 
-    if(is.null(contrasts) && (options("contrasts")[[1]][1]!="contr.treatment" || options("contrasts")[[1]][1]!="contr.poly") && !missing(data)){
-      col.names   <- effect.labels(mt,data)
-      if(length(col.names)==length(colnames(X))){
-        colnames(X) <- effect.labels(mt,data)
+    # ## Edited by KHL 
+    # if(is.null(contrasts) && (options("contrasts")[[1]][1]!="contr.treatment" || options("contrasts")[[1]][1]!="contr.poly") && !missing(data)){
+    #   col.names   <- effect.labels(mt,data)
+    #   if(length(col.names)==length(colnames(X))){
+    #     colnames(X) <- effect.labels(mt,data)
+    #   }
+    # }
+    # ## End edit
+    ## Edited by KHL CCS = Cell Count Scaling
+    col.names   <- effect.labels(mt,mf,contrasts) # mt is "terms" from formula, x is model.matrix
+    if(length(col.names)==length(colnames(X))){
+      colnames(X) <- col.names
+    }
+    if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.sum", "contr.weighted")) ||
+       (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.sum", "contr.weighted"))) ||
+       (is.character(contrasts.orig) && contrasts.orig %in% c("contr.sum", "contr.weighted"))){
+      # Special handling of interactions for weighted coding
+      if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.weighted")) ||
+         (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.weighted"))) ||
+         (is.character(contrasts.orig) && contrasts.orig %in% c("contr.weighted"))){      
+        mt_factors <- attr(mt, "factors")
+        main_interactions <- colSums(mt_factors)
+        if(any(main_interactions>1)){
+          # Use contr.sum as basis for weighted interactions
+          contsum <- as.list(rep("contr.sum", length(facs)))
+          names(contsum) <- names(facs)
+          x_sum <- model.matrix(mt, mf, contsum)
+          ass <- attr(x_sum, "assign")
+          
+          for(i in which(main_interactions>1)){
+            # Convert columns of model.matrix to factor and use to find weights
+            int_fac <- interaction(mf[rownames(mt_factors)[mt_factors[,i]==1]])
+            n_each  <- table(int_fac)
+            if(any(n_each==0))
+              warning(paste0("Contrast error due to empty cell"))
+            x_col <- which(ass==i)
+            for(lev in levels(int_fac)){
+              X[int_fac == lev, x_col] = x_sum[int_fac == lev, x_col] * min(n_each)/n_each[lev]
+            }
+          }
+        }
       }
     }
     ## End edit

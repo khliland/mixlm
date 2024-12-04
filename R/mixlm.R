@@ -10,8 +10,8 @@
 }
 
 # Effect labels
-effect.labels <- function(t,data){
-	csum <- ifelse(options("contrasts")[[1]][1] == "contr.sum",	TRUE, FALSE)
+effect.labels <- function(t,data,contrasts){
+  #csum <- ifelse(options("contrasts")[[1]][1] == "contr.sum",	TRUE, FALSE)
 	effects   <- attr(t, "term.labels")
 	factors   <- attr(t, "factors")
 	intercept <- attr(t, "intercept")
@@ -31,14 +31,15 @@ effect.labels <- function(t,data){
 			inter <- list()
 			for(j in 1:length(cur)){
 			  if(inherits(data[[cur[j]]],'factor')){ # Handle factor main effect
-				# if("factor"%in%class(data[[cur[j]]])){ # Handle factor main effect
 					levs <- levels(data[[cur[j]]])
+					# Individual factor contrast handling
+					csum <- ifelse(contrasts[[cur[j]]][1] %in% c("contr.sum","contr.treatment.last"),	TRUE, FALSE)
 					if(csum){
 						n.lev <- length(levs)
+						# Nested factor contrast handling
 						if(factors[cur[j],i]==2){
 							inter[[j]] <- paste(cur[j],"(",levs,")",sep="")
 						} else {
-							# inter[[j]] <- paste(cur[j],"(",levs[-n.lev],"-",levs[n.lev],")",sep="")
 							inter[[j]] <- paste(cur[j],"(",levs[-n.lev],")",sep="")
 						}
 					} else {

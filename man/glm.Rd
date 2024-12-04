@@ -17,7 +17,7 @@
 glm(formula, family = gaussian, data, weights, subset,
     na.action, start = NULL, etastart, mustart, offset,
     control = list(\dots), model = TRUE, method = "glm.fit",
-    x = FALSE, y = TRUE, contrasts = NULL, REML = TRUE, \dots)
+    x = FALSE, y = TRUE, contrasts = "contr.sum", REML = TRUE, \dots)
 }
 \arguments{
   \item{formula}{an object of class \code{"\link{formula}"} (or one that
@@ -91,12 +91,13 @@ glm(formula, family = gaussian, data, weights, subset,
     \code{n}.
   }
 
-  \item{contrasts}{an optional list. See the \code{contrasts.arg}
-    of \code{model.matrix.default}.}
+  \item{contrasts}{character indicating which coding should be applied
+    to all \code{factor}s or an optional list. See the \code{contrasts.arg}
+    of \code{\link{model.matrix.default}}. Defaults to \code{"contr.sum"}. 
+    See Details for more information.}
 
   \item{REML}{ is used to invoke restricted maximum likelihood (TRUE)
 	or maximum likelihood (FALSE) estimation instead of least squares.}
-
 
   \item{\dots}{
     For \code{glm}: arguments to be used to form the default

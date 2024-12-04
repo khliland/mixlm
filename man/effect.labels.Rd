@@ -7,7 +7,7 @@ Create new effect labels for \code{lm}
 Alternative notation of effect labels including levels.
 }
 \usage{
-effect.labels(t, data)
+effect.labels(t, data, contrasts)
 }
 \arguments{
   \item{t}{
@@ -15,6 +15,9 @@ effect.labels(t, data)
 }
   \item{data}{
 	Corresponding model.matrix.
+}
+  \item{contrasts}{
+	List of contrasts, similar to the \code{contrast} argument of \code{lm}.
 }
 }
 \value{
