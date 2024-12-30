@@ -5,13 +5,11 @@
 #  options(contrasts=c('contr.sum','contr.poly'))
   if (interactive()) {
     packageStartupMessage('mixlm ',as.character(utils::packageVersion("mixlm")))
-#    packageStartupMessage("Setting default contrast to sum-to-zero.\nSee argument 'coding' for 'lm' for more options.")
   }
 }
 
 # Effect labels
-effect.labels <- function(t,data,contrasts){
-  #csum <- ifelse(options("contrasts")[[1]][1] == "contr.sum",	TRUE, FALSE)
+effect.labels <- function(t, data, contrasts){
 	effects   <- attr(t, "term.labels")
 	factors   <- attr(t, "factors")
 	intercept <- attr(t, "intercept")
@@ -43,10 +41,15 @@ effect.labels <- function(t,data,contrasts){
 							inter[[j]] <- paste(cur[j],"(",levs[-n.lev],")",sep="")
 						}
 					} else {
+					  if(contrasts[[cur[j]]][1]=="contr.weighted"){
+					    omit <- which(!(levs %in% colnames(contr.weighted(data[[cur[j]]]))))
+					  } else {
+					    omit <- 1
+					  }
 						if(factors[cur[j],i]==2){
 							inter[[j]] <- paste(cur[j],"(",levs,")",sep="")
 						} else {
-							inter[[j]] <- paste(cur[j],"(",levs[-1],")",sep="")
+							inter[[j]] <- paste(cur[j],"(",levs[-omit],")",sep="")
 						}
 					}			
 				} else {
@@ -61,6 +64,7 @@ effect.labels <- function(t,data,contrasts){
 
 
 effect.source <- function(t,data){
+  # csum is a silly check, but most of this code is solely for the purpose of finding the number of effect levels.
   csum <- ifelse(options("contrasts")[[1]][1] %in% c("contr.weighted","contr.sum"),	TRUE, FALSE)
   effects   <- attr(t, "term.labels")
   factors   <- attr(t, "factors")
@@ -81,14 +85,12 @@ effect.source <- function(t,data){
       inter <- list()
       for(j in 1:length(cur)){
         if(inherits(data[[cur[j]]], "factor")){ # Handle factor main effect
-        # if("factor"%in%class(data[[cur[j]]])){ # Handle factor main effect
           levs <- levels(data[[cur[j]]])
           if(csum){
             n.lev <- length(levs)
             if(factors[cur[j],i]==2){
               inter[[j]] <- paste(cur[j],"(",levs,")",sep="")
             } else {
-              # inter[[j]] <- paste(cur[j],"(",levs[-n.lev],"-",levs[n.lev],")",sep="")
               inter[[j]] <- paste(cur[j],"(",levs[-n.lev],")",sep="")
             }
           } else {

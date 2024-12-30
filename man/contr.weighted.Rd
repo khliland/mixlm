@@ -18,7 +18,9 @@ contr.weighted(x, base)
 Different from the contrasts made throught the \code{stats} package functions
 this contrast requires a full \code{factor} vector as input rather than its
 respective \code{levels} as weights are computed from the frequencies of the
-\code{factor} \code{levels}.
+\code{factor} \code{levels}. Interactions between weighted contrasts are
+handled specifically using the weighting strategy while interactions between
+weighted contrasts and other contrasts are handled as numerical products.
 }
 \value{
 A \code{matrix} with \code{n} rows and \code{n-1} values.

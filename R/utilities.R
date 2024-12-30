@@ -120,11 +120,17 @@ dimnames(qtukey1df) <- list(k = 2:20, P = c(0.9, 0.95, 0.975, 0.99))
 
 # Weighted contrasts
 contr.weighted <- function (x, base){
+  # if(class(x)=="character"){
+  #   x <- attr(levels(u),"payload")
+  #   if(is.null(x))
+  #     stop("'contr.weighted' requires a factor or an object having an attribute called 'payload', containing a factor")
+  #   class(x) <- "factor"
+  # }
+    
   levs <- levels(x)
   frequencies <- table(x)
   if(missing(base))
     base <- names(which.max(frequencies))
-#    base <- levs[length(levs)]
   base <- which(levs == base)
   contr <- contr.treatment(length(frequencies), base = base)
   contr[base, ] <- -1 * frequencies[-base]/frequencies[base]

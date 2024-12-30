@@ -1,9 +1,10 @@
 ##### Version 1.4.1
-Date: 06 December 2024
+Date: 30 December 2024
 
 Changes:
 --------
 - Corrected labelling of factor effect levels.
+- Enabled combinations of effect codings in combination with contr.weighted.
 
 ##### Version 1.4.0
 Date: 07 October 2024

@@ -313,6 +313,7 @@ lm <- function (formula, data, subset, weights, na.action,
   contrasts.orig <- contrasts
   if(!is.null(contrasts)){
     if(is.character(contrasts) && length(contrasts)==1){
+      # Handle contrasts given as a signle string
       facs <- which(unlist(lapply(mf, inherits, what = "factor")))
       if(contrasts == "contr.treatment.last"){ # Force last level of factor to base level
         contrasts <- lapply(mf[names(facs)], function(f){nl <- nlevels(f); contr.treatment(nl,nl)})
@@ -323,6 +324,24 @@ lm <- function (formula, data, subset, weights, na.action,
           contrasts <- as.list(rep(contrasts, length(facs)))
           names(contrasts) <- names(facs)
         }
+    } else {
+      # Handle contrasts given as lists
+      if(is.list(contrasts)){
+        facs <- which(unlist(lapply(mf, inherits, what = "factor")))
+        if(length(facs) != length(contrasts))
+          stop("Number of contrasts must match number of factors when specified separately")
+        for(i in 1:length(contrasts)){
+          if(contrasts[[i]] == "contr.treatment.last"){ # Force last level of factor to base level
+            nl <- nlevels(mf[[names(contrasts)[i]]])
+            contrasts[[i]] <- contr.treatment(nl,nl)
+          } else
+            if(contrasts[[i]] == "contr.weighted")
+              contrasts[[i]] <- contr.weighted(mf[[names(contrasts)[i]]])
+            else {
+              contrasts[[i]] <- contrasts[[i]]
+            }
+        }
+      }
     }
   }
   ## avoid any problems with 1D or nx1 arrays by as.vector.
@@ -350,9 +369,9 @@ lm <- function (formula, data, subset, weights, na.action,
     }
   }
   else {
-    x <- model.matrix(mt, mf, contrasts)
+    x <- model.matrix(object=mt, data=mf, contrasts.arg=contrasts)
     effect.sources <- effect.source(mt,mf)
-    ## Edited by KHL CCS = Cell Count Scaling
+    ## Edited by KHL (CCS = Cell Count Scaling)
     col.names   <- effect.labels(mt,mf,contrasts) # mt is "terms" from formula, x is model.matrix
     if(length(col.names)==length(colnames(x))){
       colnames(x) <- col.names
