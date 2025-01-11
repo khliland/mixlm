@@ -1,10 +1,12 @@
 ##### Version 1.4.1
-Date: 30 December 2024
+Date: 07 January 2025
 
 Changes:
 --------
 - Corrected labelling of factor effect levels.
 - Enabled combinations of effect codings in combination with contr.weighted.
+- Added argument equal_baseline to lm() to enable the possibility of interpreting
+models like A + A:B as main effect and interaction, not as a nested model.
 
 ##### Version 1.4.0
 Date: 07 October 2024

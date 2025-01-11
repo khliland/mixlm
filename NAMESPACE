@@ -12,7 +12,7 @@ importFrom("stats", ".getXlevels", "add1", "anova", "aov",
            "model.offset", "model.response", "model.weights",
            "naprint", "pchisq", "pf", "pnorm", "printCoefmat", "pt",
            "ptukey", "qnorm", "qt", "qtukey", "quantile", "residuals",
-           "symnum", "terms", "update", "var", "vcov")
+           "symnum", "terms", "update", "var", "vcov", "contr.SAS", "contr.helmert", "contr.poly")
 export(
     Anova,
     anova_reg,

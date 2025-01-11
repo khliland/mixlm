@@ -26,7 +26,7 @@
 lm(formula, data, subset, weights, na.action,
    method = "qr", model = TRUE, x = TRUE, y = TRUE, qr = TRUE,
    singular.ok = TRUE, contrasts = "contr.sum", offset, 
-   unrestricted = TRUE, REML = NULL, \dots)
+   unrestricted = TRUE, REML = NULL, equal_baseline = FALSE, \dots)
 }
 \arguments{
   \item{formula}{an object of class \code{"\link{formula}"} (or one that
@@ -84,6 +84,8 @@ lm(formula, data, subset, weights, na.action,
 
   \item{REML}{is used to invoke restricted maximum likelihood (TRUE)
   or maximum likelihood (FALSE) estimation instead of least squares.}
+  
+  \item{equal_baseline}{Set to \code{TRUE} to remove interaction between effects.}
 
   \item{\dots}{additional arguments to be passed to the low level
     regression fitting functions (see below).}

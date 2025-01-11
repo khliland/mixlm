@@ -114,19 +114,8 @@ qtukey1df <- matrix(c(8.929,13.437,16.358,18.488,20.15,21.504,22.642,23.621,24.4
                       90.024,135.041,164.258,185.575,202.21,215.769,227.166,236.966,245.542,253.151,259.979,266.165,271.812,277.003,281.803,286.263,290.426,294.328,297.997), 19,4)
 dimnames(qtukey1df) <- list(k = 2:20, P = c(0.9, 0.95, 0.975, 0.99))
 
-# Weighted sum-to-zero contrasts by cell count scaling
-# contr.sum_ccs <- stats::contr.sum
-# Scaling is performed in lm()
-
 # Weighted contrasts
 contr.weighted <- function (x, base){
-  # if(class(x)=="character"){
-  #   x <- attr(levels(u),"payload")
-  #   if(is.null(x))
-  #     stop("'contr.weighted' requires a factor or an object having an attribute called 'payload', containing a factor")
-  #   class(x) <- "factor"
-  # }
-    
   levs <- levels(x)
   frequencies <- table(x)
   if(missing(base))
@@ -136,4 +125,41 @@ contr.weighted <- function (x, base){
   contr[base, ] <- -1 * frequencies[-base]/frequencies[base]
   dimnames(contr) <- list(names(frequencies),names(frequencies[-base]))
   return(contr)
+}
+
+# Internal function that takes a formula as input and extends the formula with missing
+# main effects that are only present as interactions in the original formula.
+.extend_formula <- function(formula){
+  # Extract the terms from the formula
+  terms <- attr(terms(formula), "term.labels")
+  # Extract the interactions from the formula
+  interactions <- terms[grep(":", terms)]
+  interactions <- interactions[!grepl("`",interactions)]
+  # Extract the main effects from the formula
+  main_effects <- terms[!terms %in% interactions]
+  # Extract the variables from the interactions
+  variables <- unique(unlist(strsplit(interactions, ":")))
+  # Find the main effects that are missing
+  missing_main_effects <- variables[!variables %in% main_effects]
+  # Find interactions from which the missing_main_effects are derived
+  interactions_with_missing <- interactions[unlist(lapply(interactions, function(i){any(missing_main_effects %in% unlist(strsplit(i, ":")))}))]
+  # Create the extended formula
+  extended_formula <- formula
+  for (main_effect in missing_main_effects) {
+    # Use expression to create the main effect
+    extended_formula <- update(extended_formula, as.formula(paste(". ~ . + ", main_effect)))
+  }
+  return(list(eformula=extended_formula, missing=missing_main_effects, 
+              interactions=interactions_with_missing, variables=variables))
+}
+
+.krons <- function(x){
+  if (length(x) == 1) 
+    return(x[[1]])
+  k <- kronecker(x[[1]], x[[2]])
+  if (length(x) == 2) 
+    return(k)
+  for (i in 3:length(x)) 
+    k <- kronecker(k, x[[i]])
+  return(k)
 }
