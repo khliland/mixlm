@@ -314,16 +314,10 @@ lm <- function (formula, data, subset, weights, na.action,
     if(is.character(contrasts) && length(contrasts)==1){
       # Handle contrasts given as a single string
       facs <- which(unlist(lapply(mf, inherits, what = "factor")))
-      if(contrasts == "contr.treatment.last"){ # Force last level of factor to base level
-        contrasts <- lapply(mf[names(facs)], function(f){nl <- nlevels(f); contr.treatment(nl,nl)})
-      } else
-        if(contrasts == "contr.weighted")
-          contrasts <- lapply(mf[facs], "contr.weighted")
-        else {
-          contrasts <- as.list(rep(contrasts, length(facs)))
-          names(contrasts) <- names(facs)
-        }
+      contrasts <- as.list(rep(contrasts, length(facs)))
+      names(contrasts) <- names(facs)
     }
+    contrasts.names <- contrasts
     # Handle contrasts given as lists
     if(is.list(contrasts) && length(contrasts) > 1){
       facs <- which(unlist(lapply(mf, inherits, what = "factor")))
@@ -413,50 +407,16 @@ lm <- function (formula, data, subset, weights, na.action,
   }
   else {
     # Alternative handling of missing main effects in model.matrix
-    # if(!identical(eobj <- .extend_formula(formula), formula)){
-    #   eformula <- eobj$eformula
-    #   efactors <- eobj$missing
-    #   mte <- terms(eformula)
-    #   xe <- model.matrix(object=mte, data=mf, contrasts.arg=contrasts)
-    #   eeffect.sources <- effect.source(mte,mf)
-    #   effect.sources <- setdiff(eeffect.sources, efactors)
-    #   x <- xe[, match(effect.sources, eeffect.sources)]
-    #   browser()
-    # } else {
     x <- model.matrix(object=mt, data=mf, contrasts.arg=contrasts)
     effect.sources <- effect.source(mt,mf)
-    # }
     ## Edited by KHL (CCS = Cell Count Scaling)
-    col.names   <- effect.labels(mt,mf,contrasts) # mt is "terms" from formula, x is model.matrix
+    col.names   <- effect.labels(mt,mf,contrasts.names) # mt is "terms" from formula, x is model.matrix
     if(length(col.names)==length(colnames(x))){
       colnames(x) <- col.names
-      # effect.sources <- effect.source(mt,mf)
     }
     if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.sum", "contr.weighted")) ||
        (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.sum", "contr.weighted"))) ||
        (is.character(contrasts.orig) && contrasts.orig %in% c("contr.sum", "contr.weighted"))){
-      #    if((is.list(contrasts) || is.null(contrasts)) && (options("contrasts")[[1]][1] %in% c("contr.sum", "contr.weighted")) && !missing(data)){ #  || options("contrasts")[[1]][1]!="contr.poly"
-      # col.names   <- effect.labels(mt,mf,contrasts) # mt is "terms" from formula, x is model.matrix
-      # if(length(col.names)==length(colnames(x))){
-      #   colnames(x) <- col.names
-      #   # effect.sources <- effect.source(mt,mf)
-      # }
-      #      # Special handling of interactions for ccs coding
-      #      if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.sum_ccs")) ||
-      #         (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.sum_ccs"))) ||
-      #         (is.character(contrasts.orig) && contrasts.orig %in% c("contr.sum_ccs"))){   
-      #        int <- interaction(mf[unlist(lapply(mf,class))=="factor"])
-      #        nlev <- nlevels(int)
-      #        tint <- table(int)
-      #        N <- round(median(tint))
-      #        #levels(int) <- sqrt(N/tint)
-      #        wgt <- rep(1, nrow(x))
-      #        for(i in 1:nlevels(int)){
-      #          wgt[int==levels(int)[i]] <- sqrt(N/tint[i])
-      #        }
-      #        x <- x*wgt
-      #        ccs <- TRUE
-      #      }
       # Special handling of interactions for weighted coding
       if((is.null(contrasts.orig) && options("contrasts")[[1]][1] %in% c("contr.weighted")) ||
          (is.list(contrasts.orig) && all(unlist(contrasts.orig) %in% c("contr.weighted"))) ||
@@ -497,6 +457,7 @@ lm <- function (formula, data, subset, weights, na.action,
   z$na.action <- attr(mf, "na.action")
   z$offset <- offset
   z$contrasts <- attr(x, "contrasts")
+  z$contrasts.names <- contrasts.names
   z$xlevels <- .getXlevels(mt, mf)
   z$call <- cl
   z$terms <- mt
