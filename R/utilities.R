@@ -156,7 +156,7 @@ contr.weighted <- function (x, base){
 .krons <- function(x){
   if (length(x) == 1) 
     return(x[[1]])
-  k <- kronecker(x[[1]], x[[2]])
+  k <- kronecker(x[[2]], x[[1]])
   if (length(x) == 2) 
     return(k)
   for (i in 3:length(x)) 
