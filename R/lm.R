@@ -359,7 +359,7 @@ lm <- function (formula, data, subset, weights, na.action,
   if(equal_baseline){
     eformula <- .extend_formula(formula)
     # Check that there are interactions and all included interaction variables are factors
-    if(!is.null(eformula$interactions) && all(unlist(lapply(mf[eformula$variables], inherits, what="factor")))){
+    if(!is.null(eformula$interactions) && !length(eformula$interactions)==0 && all(unlist(lapply(mf[eformula$variables], inherits, what="factor")))){
       # Expand mf
       for(i in 1:length(eformula$interactions)){
         mf[ncol(mf)+1] <- interaction(mf[strsplit(eformula$interactions[i],":")[[1]]])
@@ -367,7 +367,7 @@ lm <- function (formula, data, subset, weights, na.action,
       colnames(mf)[(ncol(mf)-length(eformula$interactions)+1):ncol(mf)] <- eformula$interactions
       # Adapt formula
       for(i in 1:length(eformula$interactions)){
-        formula <- formula(gsub(eformula$interactions[[i]], paste0("`",eformula$interactions[[i]],"`"),as.character(formula)))
+        formula <- formula(paste(gsub(eformula$interactions[[i]], paste0("`",eformula$interactions[[i]],"`"),as.character(formula))[c(2,1,3)], collapse=" "))
       }
       mt <- terms(formula)
       for(i in 1:length(eformula$interactions)){
@@ -376,7 +376,7 @@ lm <- function (formula, data, subset, weights, na.action,
       }
       contrasts <- contrasts[setdiff(names(contrasts), eformula$missing)]
     } else {
-      stop("'equal_baseline' should only be used with interactions, and all interaction-variables should be factors.")
+      stop("'equal_baseline' should only be used with interactions where one of its factors are missing from the formula, and all interaction-variables should be factors.")
     }
   }
   if (method == "model.frame")

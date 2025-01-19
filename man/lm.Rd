@@ -85,7 +85,10 @@ lm(formula, data, subset, weights, na.action,
   \item{REML}{is used to invoke restricted maximum likelihood (TRUE)
   or maximum likelihood (FALSE) estimation instead of least squares.}
   
-  \item{equal_baseline}{Set to \code{TRUE} to remove interaction between effects.}
+  \item{equal_baseline}{Experimental: Set to \code{TRUE} to let interactions, where a main effect is missing,
+    e.g., a nested model, 
+    be handled with the same baseline as a cross effect model. If \code{TRUE} the corresponding interactions
+    will be put in quotation marks and included in the \code{model.frame}.}
 
   \item{\dots}{additional arguments to be passed to the low level
     regression fitting functions (see below).}
@@ -271,8 +274,12 @@ par(opar)
 
 # Linear mixed model
 dataset   <- data.frame(y=rnorm(8), x=factor(c(rep(1,4),rep(0,4))), z=factor(rep(c(1,0),4)))
-mixlm <- lm(y~x*r(z), data = dataset)
+mixlm <- lm(y ~ x*r(z), data = dataset)
 Anova(mixlm,type="III")
+
+# Nested model in default version and with equal_baseline = TRUE
+anova(lm(y ~ x + x:z, data = dataset))
+anova(lm(y ~ x + x:z, data = dataset, equal_baseline=TRUE))
 
 ### less simple examples in "See Also" above
 }
