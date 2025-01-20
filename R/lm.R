@@ -280,17 +280,17 @@ lm <- function (formula, data, subset, weights, na.action,
       formula <- rw$formula
       mf$formula <- rw$formula
       rw$unrestricted <- unrestricted
-      if(is.logical(REML)){ # Perform 
-        if(requireNamespace("lme4", quietly = TRUE)){
-          cl[[1]] <- as.name("lmer")
-          cl[["formula"]] <- rw$reml.formula
-          object <- eval(cl,parent.frame())
-          object@call <- cl
-          return(object)
-        } else {
-          warning('Package lme4 required for random REML/ML models.')
-        }
-      }
+      # if(is.logical(REML)){ # Perform 
+      #   if(requireNamespace("lme4", quietly = TRUE)){
+      #     cl[[1]] <- as.name("lmer")
+      #     cl[["formula"]] <- rw$reml.formula
+      #     object <- eval(cl,parent.frame())
+      #     object@call <- cl
+      #     return(object)
+      #   } else {
+      #     warning('Package lme4 required for random REML/ML models.')
+      #   }
+      # }
     }
   } else {
     is.random <- FALSE
@@ -352,6 +352,21 @@ lm <- function (formula, data, subset, weights, na.action,
               }
             }
         }
+      }
+    }
+  }
+  # lme4 handling
+  if(length(rw) != 1){
+    if(is.logical(REML)){ # Perform 
+      if(requireNamespace("lme4", quietly = TRUE)){
+        cl[[1]] <- as.name("lmer")
+        cl[["contrasts"]] <- contrasts[rw$fixed]
+        cl[["formula"]] <- rw$reml.formula
+        object <- eval(cl,parent.frame())
+        object@call <- cl
+        return(object)
+      } else {
+        warning('Package lme4 required for random REML/ML models.')
       }
     }
   }
