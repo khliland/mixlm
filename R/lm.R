@@ -360,7 +360,7 @@ lm <- function (formula, data, subset, weights, na.action,
     if(is.logical(REML)){ # Perform 
       if(requireNamespace("lme4", quietly = TRUE)){
         cl[[1]] <- as.name("lmer")
-        cl[["contrasts"]] <- contrasts[rw$fixed]
+        cl[["contrasts"]] <- contrasts[rw$fixed[!grepl(":",rw$fixed)]]
         cl[["formula"]] <- rw$reml.formula
         object <- eval(cl,parent.frame())
         object@call <- cl
