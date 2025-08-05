@@ -28,7 +28,10 @@ Anova.lmm <- function(mod, ...){
       }
     }
   } else {
-    class(mod) <- 'lm'
+    if(inherits(mod, "mlm"))
+      class(mod) <- c("mlm", "lm")
+    else
+      class(mod) <- "lm"
     return(Anova(mod, ...))
   }
 }
@@ -61,20 +64,18 @@ AnovaMix <- function(object, SStype){
   n.randoms   <- length(ind.randoms)
   
   # Estimate fixed effect Anova
-  #  opt <- options("contrasts")
-  #  options(contrasts=c('contr.sum','contr.poly'))
-  #  noRandom <- update(object)
   noRandom <- object
   noRandom$random <- NULL
-  class(noRandom) <- "lm"
+  if(inherits(noRandom, "mlm"))
+    class(noRandom) <- c("mlm", "lm")
+  else
+    class(noRandom) <- "lm"
   if(SStype == 1 || SStype == "I")
     fixed.model <- as.data.frame(stats::anova(noRandom))
   if(SStype == 2 || SStype == "II")
     fixed.model <- as.data.frame(car::Anova(noRandom, type='II', singular.ok=TRUE))
   if(SStype == 3 || SStype == "III")
     fixed.model <- as.data.frame(car::Anova(noRandom, type='III', singular.ok=TRUE))
-  # options(contrasts=opt$contrasts)
-  # 	fixed.model <- fixed.model[-1,] # Remove intercept
   fixed.model <- fixed.model[c(all.effects,"Residuals"),] # Sort according to all.effects
   if(!any("Mean Sq"%in%colnames(fixed.model))){
     fixed.model <- cbind(fixed.model[,"Sum Sq"]/fixed.model[,"Df"], fixed.model)
@@ -280,17 +281,6 @@ lm <- function (formula, data, subset, weights, na.action,
       formula <- rw$formula
       mf$formula <- rw$formula
       rw$unrestricted <- unrestricted
-      # if(is.logical(REML)){ # Perform 
-      #   if(requireNamespace("lme4", quietly = TRUE)){
-      #     cl[[1]] <- as.name("lmer")
-      #     cl[["formula"]] <- rw$reml.formula
-      #     object <- eval(cl,parent.frame())
-      #     object@call <- cl
-      #     return(object)
-      #   } else {
-      #     warning('Package lme4 required for random REML/ML models.')
-      #   }
-      # }
     }
   } else {
     is.random <- FALSE
@@ -319,40 +309,43 @@ lm <- function (formula, data, subset, weights, na.action,
     }
     contrasts.names <- contrasts
     # Handle contrasts given as lists
-    if(is.list(contrasts) && length(contrasts) > 1){
+    if(is.list(contrasts) && !is.logical(REML)){# && length(contrasts) > 1){
       facs <- which(unlist(lapply(mf, inherits, what = "factor")))
       if(length(facs) != length(contrasts))
         stop("Number of contrasts must match number of factors when specified separately")
-      for(i in 1:length(contrasts)){
-        if(!is.matrix(contrasts[[i]])){
-          nl <- nlevels(mf[[names(contrasts)[i]]])
-          if(contrasts[[i]] == "contr.treatment.last"){ # Force last level of factor to base level
-            contrasts[[i]] <- contr.treatment(nl,nl)
-          } else
-            if(contrasts[[i]] == "contr.weighted")
-              contrasts[[i]] <- contr.weighted(mf[[names(contrasts)[i]]])
-            else {
-              if(contrasts[[i]] == "contr.treatment")
-                contrasts[[i]] <- contr.treatment(nl)
+      if(length(facs)>0)
+        for(i in 1:length(contrasts)){
+          if(!is.matrix(contrasts[[i]])){
+            nl <- nlevels(mf[[names(contrasts)[i]]])
+            if(contrasts[[i]] == "contr.treatment.last"){ # Force last level of factor to base level
+              contrasts[[i]] <- contr.treatment(nl,nl)
+            } else
+              if(contrasts[[i]] == "contr.weighted")
+                contrasts[[i]] <- contr.weighted(mf[[names(contrasts)[i]]])
               else {
-                if(contrasts[[i]] == "contr.sum")
-                  contrasts[[i]] <- contr.sum(nl)
+                if(contrasts[[i]] == "contr.treatment")
+                  contrasts[[i]] <- contr.treatment(nl)
                 else {
-                  if(contrasts[[i]] == "contr.poly")
-                    contrasts[[i]] <- contr.poly(nl)
+                  if(contrasts[[i]] == "contr.sum")
+                    contrasts[[i]] <- contr.sum(nl)
                   else {
-                    if(contrasts[[i]] == "contr.SAS")
-                      contrasts[[i]] <- contr.SAS(nl)
+                    if(contrasts[[i]] == "contr.poly")
+                      contrasts[[i]] <- contr.poly(nl)
                     else {
-                      if(contrasts[[i]] == "contr.helmert")
-                        contrasts[[i]] <- contr.helmert(nl)
+                      if(contrasts[[i]] == "contr.SAS")
+                        contrasts[[i]] <- contr.SAS(nl)
+                      else {
+                        if(contrasts[[i]] == "contr.helmert")
+                          contrasts[[i]] <- contr.helmert(nl)
+                      }
                     }
                   }
                 }
               }
-            }
+          }
         }
-      }
+      else
+        contrasts <- NULL
     }
   }
   # lme4 handling
@@ -465,7 +458,7 @@ lm <- function (formula, data, subset, weights, na.action,
     else lm.wfit(x, y, w, offset = offset, singular.ok=singular.ok, ...)
   }
   if(is.matrix(y)){
-    class(z) <- c( "mlm","lm")
+    class(z) <- c( "lmm","mlm", "lm")
   } else {
     class(z) <- c( "lmm", "lm")
   }
