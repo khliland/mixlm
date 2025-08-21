@@ -1,3 +1,12 @@
+##### Version 1.4.3
+Date: 19 August 2025
+
+Changes:
+--------
+- Improved contrast handling for lme4 models.
+- Added support for multivariate mixed models.
+- Temporarily removed reference to the hasseDiagram package awaiting update.
+
 ##### Version 1.4.2
 Date: 14 January 2025
 

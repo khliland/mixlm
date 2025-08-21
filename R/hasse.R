@@ -43,11 +43,14 @@
 #' modv <- lm(y~A*r(B) + r(Ind), data=dat)
 #' (anv <- Anova(mod, type="II"))
 #' Hv <- hasseMod(modv, manualTerms=c("Ind"), manualParents=list(c("A")))
-#' \notrun{ # Requires installation of Rgraphviz and hasseDiagram
-#' hasse(Hv$hasse, parameters=list(cluster = FALSE, arrows = "none", edgeColor = "darkred"))
-#' }
 hasseMod <- function(object, manualTerms=NULL, manualParents=NULL, 
                      meanName="M", errorName="(E)"){
+  # Temporarily removed from example due to removal of hasseDiagram package from CRAN:
+  # \notrun{ # Requires installation of Rgraphviz and hasseDiagram
+  # hasse(Hv$hasse, parameters=list(cluster = FALSE, arrows = "none", edgeColor = "darkred"))
+  # }
+  # Removed from DESCRIPTION:
+  # Suggests: lme4, hasseDiagram
   tt <- attr(terms(object),"factors")
   terms <- colnames(tt)
   tn <- c(meanName, terms, errorName)

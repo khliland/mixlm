@@ -1,5 +1,6 @@
 \name{AnovaMix}
 \alias{AnovaMix}
+\alias{AnovaMixMLM}
 \encoding{latin1}
 \title{
 Mixed model least squares analysis of variance (mixed ANOVA).
@@ -10,13 +11,14 @@ variance components and errors.
 }
 \usage{
 AnovaMix(object, SStype)
+AnovaMixMLM(object, SStype)
 }
 \arguments{
   \item{object}{ object fitted by lm (mixlm package) containing at least one random effect.}
   \item{SStype}{ type of sums-of-squares (I/II/III) for Analysis of Variance.}
 }
 \details{
-\code{AnovaMix} can either be invoked directly or through the Anova() function (with type III error).
+\code{AnovaMix} and \code{AnovaMixMLM} can either be invoked directly or through the Anova() function (with type I/II/III error).
 }
 \value{
   \item{lm }{linear model fitted by lm in package mixlm.}
@@ -41,10 +43,19 @@ Only balanced models are fully supported.
 \code{\link{print.AnovaMix}}, \code{\link{Anova}}, \code{\link{lm}}
 }
 \examples{
+# Single response
 mydata <- data.frame(y = rnorm(12),
 							  x = factor(c(rep(2,4),rep(1,4),rep(0,4))),
 							  z = factor(rep(c(1,0),6)))
 mixlm <- lm(y~x*r(z),
+			data = mydata)
+Anova(mixlm,type="III")
+
+# Double response
+mydata <- data.frame(Y = I(as.matrix(cbind(y1=rnorm(12), y2=rnorm(12)))),
+							  x = factor(c(rep(2,4),rep(1,4),rep(0,4))),
+							  z = factor(rep(c(1,0),6)))
+mixlm <- lm(Y~x*r(z),
 			data = mydata)
 Anova(mixlm,type="III")
 }

@@ -17,6 +17,7 @@ export(
     Anova,
     anova_reg,
     AnovaMix,
+    AnovaMixMLM,
     backward,
     best.subsets,
     cld,
@@ -38,6 +39,7 @@ export(
     PRESS.pred,
     PRESS.res,
     print.AnovaMix,
+    print.AnovaMixMLM,
   	print.CIgm,
     print.simple.glht,
     print.summary.lmm,
@@ -88,6 +90,7 @@ S3method(t_test, formula)
 S3method(z_test, default)
 S3method(z_test, formula)
 S3method(print, AnovaMix)
+S3method(print, AnovaMixMLM)
 S3method(print, CIgm)
 S3method(print, simple.glht)
 S3method(print, WF)
