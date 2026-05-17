@@ -2,3 +2,5 @@
 ^\.Rproj\.user$
 ALASCA
 Development
+^\.positai$
+^\.claude$

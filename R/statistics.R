@@ -246,6 +246,7 @@ wideForward <- function(formula, data, alpha = 0.2, force.in = NULL){
       currFormula <- update(formulaIncluded, paste('. ~ . +', varThis ))
       mod <- lm(currFormula, data = data)
       pThis[varThis] <- anova(modPre, mod)$`Pr(>F)`[2]
+      pThis[varThis] <- base::ifelse(is.na(pThis[varThis]), 1, pThis[varThis])
     }
     pInclusion <- c(pInclusion, min(pThis))
     if(length(pThis) > 1 && any(!is.na(pThis) & any(pThis < alpha))){ # Add best variable to model if any below alpha

@@ -1,4 +1,4 @@
-# Remove r() from fromula (possibly convert to lmer formula)
+# Remove r() from formula (possibly convert to lmer formula)
 rparse <- function (f, REML = FALSE) {
   if(!inherits(f,'formula'))
   # if (class(f) != "formula") 
