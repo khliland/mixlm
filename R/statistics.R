@@ -22,7 +22,7 @@ stepWise <- function(model, alpha.enter=0.15, alpha.remove=0.15, full=FALSE){
     added <- add1(current.model, full.formula, test="F") # All possible extended models
     F.added <- added[,6]            # p values of F statistic
     F <- min(F.added, na.rm = TRUE) # Minimum of p values
-    n <- which(F.added == F)-1      # Number of best extra regressor
+    n <- which(F.added == F)[1]-1      # Number of best extra regressor
     if(full){ # Extended output
       cat("--= Step (forward)", i, "=--", "\n", sep=" ")
       print(added)
@@ -44,7 +44,7 @@ stepWise <- function(model, alpha.enter=0.15, alpha.remove=0.15, full=FALSE){
       removed <- drop1(current.model, test="F")
       F.removed <- removed[,6]            # p values of F statistic
       F.r <- max(F.removed, na.rm = TRUE) # Maximum of p values
-      n.r <- which(F.removed == F.r)-1    # Number of best removed regressor
+      n.r <- which(F.removed == F.r)[1]-1    # Number of best removed regressor
       if(F.r>alpha.remove){
         current.formula <- update(current.formula, paste("~.-",rownames(removed[n.r+1,,drop=FALSE]),sep="")) # Add extra regressor to formula
         current.model <- update(current.model, current.formula) # Update model with extra regressor
@@ -94,7 +94,7 @@ stepWiseBack <- function(model, alpha.remove=0.15, alpha.enter=0.15, full=FALSE)
     removed <- drop1(current.model, test="F") # All possible reduced models
     F.removed <- removed[,6]          # p values of F statistic
     F <- max(F.removed, na.rm = TRUE) # Minimum of p values
-    n <- which(F.removed == F)-1      # Number of best worst regressor
+    n <- which(F.removed == F)[1]-1      # Number of best worst regressor
     if(full){ # Extended output
       cat("--= Step (backward)", i, "=--", "\n", sep=" ")
       print(removed)
@@ -115,7 +115,7 @@ stepWiseBack <- function(model, alpha.remove=0.15, alpha.enter=0.15, full=FALSE)
       added <- add1(current.model, full.formula, test="F")
       F.added <- added[,6]              # p values of F statistic
       F.a <- min(F.added, na.rm = TRUE) # Maximum of p values
-      n.a <- which(F.added == F.a)-1    # Number of best added regressor
+      n.a <- which(F.added == F.a)[1]-1    # Number of best added regressor
       if(F.a<alpha.enter){
         current.formula <- update(current.formula, paste("~.+",rownames(added[n.a+1,,drop=FALSE]),sep="")) # Add extra regressor to formula
         current.model <- update(current.model, current.formula) # Update model with extra regressor
@@ -186,7 +186,7 @@ forward <- function(model, alpha=0.2, full=FALSE, force.in=NULL){
     added <- add1(current.model, full.formula, test="F") # All possible extended models
     F.added <- added[,6]            # p values of F statistic
     F <- min(F.added, na.rm = TRUE) # Minimum of p values
-    n <- which(F.added == F)      # Number of best extra regressor
+    n <- which(F.added == F)[1]      # Number of best extra regressor
     if(full){ # Extended output
       cat("--= Step", i, "=--", "\n", sep=" ")
       print(added)
@@ -309,7 +309,7 @@ backward <- function(model, alpha=0.2, full=FALSE, hierarchy=TRUE, force.in=NULL
       removed <- drop1(model, current.dropable, test="F")} # All possible extended models
     F.removed <- removed[,6]          # p values of F statistic
     F <- max(F.removed, na.rm = TRUE) # Maximum of p values
-    n <- which(F.removed == F)-1  # Number of best removed regressor
+    n <- which(F.removed == F)[1]-1  # Number of best removed regressor
     if(full){ # Extended output
       cat("--= Step", i, "=--", "\n", sep=" ")
       print(removed)
@@ -469,6 +469,7 @@ confusion <- function(true, predicted){
 anova_reg <- function(lm.object){
   anova.result <- anova(lm.object)
   p <- dim(anova.result)[1]
+  if (p < 2) return(anova.result)
   new.anova <- anova.result[c(1,p),]
   new.anova[1,1] <- sum(anova.result[1:(p-1),1])
   new.anova[1,2] <- sum(anova.result[1:(p-1),2])
@@ -490,11 +491,9 @@ RMSEP <- function(object){
   }
   the.RMSEP <- NULL
   if(inherits(object,"mvr")){ # PCR/PLSR
-    # if(class(object)[1]=="mvr"){ # PCR/PLSR
     the.RMSEP <- pls::RMSEP(object, estimate="all")
   }
   if(inherits(object,"lm") || inherits(object,"lmm")){ # Linear regression
-    # if(class(object)[1]=="lmm" || class(object)[1]=="lm"){ # Linear regression
     the.RMSEP <- sqrt(mean(residuals(object)^2/(1-lm.influence(object)$hat)^2))
   }
   the.RMSEP
@@ -811,7 +810,7 @@ z_test.default <- function(x, y = NULL, alternative = c("two.sided", "less", "gr
   }
   nx <- length(x)
   mx <- mean(x)
-  vx <- ifelse(z.test,sds[1]^2,var(x))
+  vx <- if(z.test) sds[1]^2 else var(x)
   estimate <- c(mx,sqrt(vx))
   if(is.null(y)) {
     if(nx < 2) stop("not enough 'x' observations")
@@ -830,7 +829,7 @@ z_test.default <- function(x, y = NULL, alternative = c("two.sided", "less", "gr
       stop("not enough 'y' observations")
     if(var.equal && nx+ny < 3) stop("not enough observations")
     my <- mean(y)
-    vy <- ifelse(z.test,sds[2]^2,var(y))
+    vy <- if(z.test) sds[2]^2 else var(y)
     method <- paste(if(!var.equal)"Welch", ifelse(z.test,"Two Sample z-test","Two Sample t-test"))
     if(var.equal) {
       df <- nx+ny-2
